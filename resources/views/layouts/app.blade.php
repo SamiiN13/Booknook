@@ -56,6 +56,15 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('books.my-books') }}">My Books</a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                Requests
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ route('book-requests.my-requests') }}">My Requests</a></li>
+                                <li><a class="dropdown-item" href="{{ route('book-requests.received') }}">Received Requests</a></li>
+                            </ul>
+                        </li>
                     @endauth
                 </ul>
                 
@@ -68,6 +77,11 @@
                             <a class="nav-link" href="{{ route('register') }}">Register</a>
                         </li>
                     @else
+                        @if(Auth::user()->email === 'admin@booknook.com')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.dashboard') }}">Admin Panel</a>
+                            </li>
+                        @endif
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                                 {{ Auth::user()->name }}

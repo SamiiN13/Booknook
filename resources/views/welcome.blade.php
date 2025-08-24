@@ -21,6 +21,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 <div class="container my-5">
@@ -53,7 +54,7 @@
             </div>
         </div>
     </div>
-</div>
+        </div>
 
 <div class="bg-light py-5">
     <div class="container">
@@ -75,7 +76,7 @@
                         @guest
                             <a href="{{ route('register') }}" class="btn btn-primary">Create Account</a>
                         @else
-                            <a href="{{ route('books.create') }}" class="btn btn-primary">Share a Book</a>
+                            <a href="{{ route('dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
                         @endguest
                     </div>
                 </div>

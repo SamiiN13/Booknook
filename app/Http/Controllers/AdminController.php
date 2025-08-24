@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\User;
+use App\Models\BookRequest;
+use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -18,52 +19,75 @@ class AdminController extends Controller
 
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $credentials = $request->only('email', 'password');
-
         if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            
-            // Check if user is admin (you can add an is_admin column to users table)
-            if ($user->email === 'admin@booknook.com') {
-                $request->session()->regenerate();
-                return redirect()->intended('/admin/dashboard');
+            if (Auth::user()->email === 'admin@booknook.com') {
+                return redirect()->route('admin.dashboard');
             } else {
                 Auth::logout();
-                return back()->withErrors([
-                    'email' => 'You do not have admin privileges.',
-                ])->withInput();
+                return redirect()->back()->withErrors(['email' => 'Access denied. Admin only.']);
             }
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->withInput();
+        return redirect()->back()->withErrors(['email' => 'Invalid credentials.']);
     }
 
     public function dashboard()
     {
-        $totalUsers = User::count();
-        $totalBooks = Book::count();
-        $pendingBooks = Book::where('status', 'pending_approval')->count();
-        $availableBooks = Book::where('status', 'available')->count();
+        if (Auth::user()->email !== 'admin@booknook.com') {
+            return redirect()->route('books.index');
+        }
 
-        return view('admin.dashboard', compact('totalUsers', 'totalBooks', 'pendingBooks', 'availableBooks'));
+        $stats = [
+            'total_users' => User::count(),
+            'total_books' => Book::count(),
+            'pending_books' => Book::where('status', 'pending_approval')->count(),
+            'pending_reports' => Report::where('status', 'pending')->count(),
+            'active_requests' => BookRequest::whereIn('status', ['pending', 'approved'])->count(),
+        ];
+
+        $pendingBooks = Book::where('status', 'pending_approval')
+            ->with('user')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $pendingReports = Report::where('status', 'pending')
+            ->with(['reporter', 'reportable'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'pendingBooks', 'pendingReports'));
     }
 
-    public function logout(Request $request)
+    public function approveBook(Book $book)
+    {
+        if (Auth::user()->email !== 'admin@booknook.com') {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
+        $book->update(['status' => 'available']);
+        return redirect()->back()->with('success', 'Book approved successfully!');
+    }
+
+    public function rejectBook(Book $book)
+    {
+        if (Auth::user()->email !== 'admin@booknook.com') {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
+        $book->delete();
+        return redirect()->back()->with('success', 'Book rejected and removed.');
+    }
+
+    public function logout()
     {
         Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect('/admin/login');
+        return redirect()->route('admin.login');
     }
 } 

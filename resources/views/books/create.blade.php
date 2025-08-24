@@ -47,9 +47,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="genre" class="form-label">Genre</label>
+                                            <label for="genre" class="form-label">Genre *</label>
                                             <select class="form-select @error('genre') is-invalid @enderror" 
-                                                    id="genre" name="genre">
+                                                    id="genre" name="genre" required>
                                                 <option value="">Select Genre</option>
                                                 <option value="fiction" {{ old('genre') == 'fiction' ? 'selected' : '' }}>Fiction</option>
                                                 <option value="non-fiction" {{ old('genre') == 'non-fiction' ? 'selected' : '' }}>Non-Fiction</option>
@@ -113,14 +113,44 @@
                                             @enderror
                                         </div>
                                     </div>
+                                                                    <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="language" class="form-label">Language</label>
+                                        <input type="text" class="form-control @error('language') is-invalid @enderror" 
+                                               id="language" name="language" value="{{ old('language', 'English') }}">
+                                        @error('language')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                                                            <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="language" class="form-label">Language</label>
-                                            <input type="text" class="form-control @error('language') is-invalid @enderror" 
-                                                   id="language" name="language" value="{{ old('language', 'English') }}">
-                                            @error('language')
+                                            <label for="rarity" class="form-label">Rarity *</label>
+                                            <select class="form-select @error('rarity') is-invalid @enderror" id="rarity" name="rarity" required>
+                                                <option value="">Select rarity...</option>
+                                                <option value="common" {{ old('rarity') == 'common' ? 'selected' : '' }}>Common</option>
+                                                <option value="uncommon" {{ old('rarity') == 'uncommon' ? 'selected' : '' }}>Uncommon</option>
+                                                <option value="rare" {{ old('rarity') == 'rare' ? 'selected' : '' }}>Rare</option>
+                                                <option value="very_rare" {{ old('rarity') == 'very_rare' ? 'selected' : '' }}>Very Rare</option>
+                                            </select>
+                                            @error('rarity')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="max_loan_duration" class="form-label">Max Loan Duration (Days) *</label>
+                                            <input type="number" class="form-control @error('max_loan_duration') is-invalid @enderror" 
+                                                   id="max_loan_duration" name="max_loan_duration" value="{{ old('max_loan_duration', 14) }}" 
+                                                   min="1" max="90" required>
+                                            @error('max_loan_duration')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <small class="form-text text-muted">Maximum number of days someone can borrow this book</small>
                                         </div>
                                     </div>
                                 </div>
