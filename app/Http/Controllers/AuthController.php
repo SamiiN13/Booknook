@@ -6,9 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -37,12 +35,6 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            
-            // Store user session for this specific tab
-            $tabId = $request->cookie('tab_id') ?: Str::random(32);
-            $sessionKey = 'user_session_' . $tabId;
-            Session::put($sessionKey, Auth::id());
-            
             return redirect()->intended('/dashboard');
         }
 
@@ -70,24 +62,12 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
-        
-        // Store user session for this specific tab
-        $tabId = $request->cookie('tab_id') ?: Str::random(32);
-        $sessionKey = 'user_session_' . $tabId;
-        Session::put($sessionKey, Auth::id());
 
         return redirect('/dashboard');
     }
 
     public function logout(Request $request)
     {
-        // Clear the session for this specific tab
-        $tabId = $request->cookie('tab_id');
-        if ($tabId) {
-            $sessionKey = 'user_session_' . $tabId;
-            Session::forget($sessionKey);
-        }
-        
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
