@@ -136,5 +136,42 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Multi-session support: Generate unique tab ID
+        (function() {
+            // Check if tab_id cookie exists
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+            }
+            
+            // Generate unique tab ID if it doesn't exist
+            if (!getCookie('tab_id')) {
+                const tabId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                document.cookie = `tab_id=${tabId}; path=/; max-age=31536000`; // 1 year
+            }
+            
+            // Add tab ID to all AJAX requests
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const tabId = getCookie('tab_id');
+                if (tabId && args[1]) {
+                    args[1].headers = {
+                        ...args[1].headers,
+                        'X-Tab-ID': tabId
+                    };
+                } else if (tabId) {
+                    args[1] = {
+                        headers: {
+                            'X-Tab-ID': tabId
+                        }
+                    };
+                }
+                return originalFetch.apply(this, args);
+            };
+        })();
+    </script>
 </body>
 </html> 
