@@ -19,6 +19,12 @@ class MultiSessionMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        // Skip middleware for login, register, and logout routes
+        $skipRoutes = ['login', 'register', 'logout'];
+        if (in_array($request->route()?->getName(), $skipRoutes)) {
+            return $next($request);
+        }
+        
         // Generate a unique session identifier for this tab/window
         $tabId = $request->header('X-Tab-ID') ?: $request->cookie('tab_id') ?: Str::random(32);
         

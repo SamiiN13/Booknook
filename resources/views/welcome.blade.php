@@ -9,10 +9,26 @@
             <div class="col-lg-6">
                 <h1 class="display-4 fw-bold mb-4">Share Your Books with the World</h1>
                 <p class="lead mb-4">Join our community of book lovers. Share your favorite books, discover new ones, and connect with fellow readers.</p>
-                <div class="d-flex gap-3">
+                <div class="d-flex gap-3 flex-wrap">
                     <a href="{{ route('books.index') }}" class="btn btn-light btn-lg">Browse Books</a>
                     @guest
-                        <a href="{{ route('register') }}" class="btn btn-outline-light btn-lg">Join Now</a>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-light btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Login Options
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ route('login') }}">
+                                    <i class="fas fa-user me-2"></i>User Login
+                                </a></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.login') }}">
+                                    <i class="fas fa-shield-alt me-2"></i>Admin Login
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ route('register') }}">
+                                    <i class="fas fa-user-plus me-2"></i>Register New User
+                                </a></li>
+                            </ul>
+                        </div>
                     @endguest
                 </div>
             </div>
@@ -74,7 +90,11 @@
                         <h5 class="card-title">Get Started Today</h5>
                         <p class="card-text">Join thousands of readers who are already sharing their books.</p>
                         @guest
-                            <a href="{{ route('register') }}" class="btn btn-primary">Create Account</a>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="{{ route('login') }}" class="btn btn-primary">User Login</a>
+                                <a href="{{ route('admin.login') }}" class="btn btn-outline-primary">Admin Login</a>
+                                <a href="{{ route('register') }}" class="btn btn-success">Create Account</a>
+                            </div>
                         @else
                             <a href="{{ route('dashboard') }}" class="btn btn-primary">Go to Dashboard</a>
                         @endguest
