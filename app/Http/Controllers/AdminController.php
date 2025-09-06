@@ -26,11 +26,35 @@ class AdminController extends Controller
 
         if (Auth::attempt($credentials)) {
             if (Auth::user()->email === 'admin@booknook.com') {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'user' => [
+                            'id' => Auth::id(),
+                            'name' => Auth::user()->name,
+                            'email' => Auth::user()->email
+                        ],
+                        'redirect' => '/admin/dashboard'
+                    ]);
+                }
                 return redirect()->route('admin.dashboard');
             } else {
                 Auth::logout();
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Access denied. Admin only.'
+                    ], 403);
+                }
                 return redirect()->back()->withErrors(['email' => 'Access denied. Admin only.']);
             }
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials.'
+            ], 401);
         }
 
         return redirect()->back()->withErrors(['email' => 'Invalid credentials.']);

@@ -28,6 +28,13 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
@@ -35,7 +42,27 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'user' => [
+                        'id' => Auth::id(),
+                        'name' => Auth::user()->name,
+                        'email' => Auth::user()->email
+                    ],
+                    'redirect' => '/dashboard'
+                ]);
+            }
+            
             return redirect()->intended('/dashboard');
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The provided credentials do not match our records.'
+            ], 401);
         }
 
         return back()->withErrors([
@@ -71,6 +98,11 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true]);
+        }
+        
         return redirect('/');
     }
 } 
