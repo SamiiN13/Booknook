@@ -203,8 +203,8 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3">
-                            <a href="{{ route('admin.books.index') }}" class="btn btn-outline-primary w-100 mb-2">
-                                <i class="fas fa-book me-2"></i>Review Books
+                            <a href="{{ route('admin.books.all') }}" class="btn btn-outline-primary w-100 mb-2">
+                                <i class="fas fa-book me-2"></i>All Books
                             </a>
                         </div>
                         <div class="col-md-3">
@@ -213,8 +213,8 @@
                             </a>
                         </div>
                         <div class="col-md-3">
-                            <a href="{{ route('books.index') }}" class="btn btn-outline-success w-100 mb-2">
-                                <i class="fas fa-search me-2"></i>Browse Books
+                            <a href="{{ route('admin.users.index') }}" class="btn btn-outline-info w-100 mb-2">
+                                <i class="fas fa-users me-2"></i>Manage Users
                             </a>
                         </div>
                         <div class="col-md-3">

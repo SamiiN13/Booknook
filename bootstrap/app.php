@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Using separate guards; no need for custom session isolation middleware
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

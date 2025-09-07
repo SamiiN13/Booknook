@@ -14,42 +14,21 @@
     @if($books->count() > 0)
         <div class="row">
             @foreach($books as $book)
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 book-card">
-                        @if($book->image_path)
-                            <img src="{{ Storage::url($book->image_path) }}" class="card-img-top" 
-                                 alt="{{ $book->title }}" style="height: 200px; object-fit: cover;">
-                        @else
-                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
-                                 style="height: 200px;">
-                                <i class="fas fa-book fa-3x text-muted"></i>
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">{{ $book->title }}</h5>
+                                <small class="text-muted">Status: {{ ucfirst(str_replace('_',' ', $book->status)) }}</small>
                             </div>
-                        @endif
-                        
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $book->title }}</h5>
-                            <h6 class="text-muted">by {{ $book->author }}</h6>
-                            
-                            <div class="mb-2">
-                                <span class="badge bg-{{ $book->status === 'available' ? 'success' : ($book->status === 'borrowed' ? 'warning' : 'secondary') }}">
-                                    {{ ucfirst(str_replace('_', ' ', $book->status)) }}
-                                </span>
-                                <span class="badge bg-{{ $book->rarity === 'very_rare' ? 'danger' : ($book->rarity === 'rare' ? 'warning' : 'info') }}">
-                                    {{ ucfirst(str_replace('_', ' ', $book->rarity)) }}
-                                </span>
-                            </div>
-                            
-                            <p class="card-text">
-                                <small class="text-muted">
-                                    <i class="fas fa-star text-warning me-1"></i>
-                                    {{ $book->average_rating }}/5 ({{ $book->total_reviews }} reviews)
-                                </small>
-                            </p>
-                            
-                            <div class="mt-auto">
-                                <a href="{{ route('books.show', $book) }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-eye me-1"></i>View Details
-                                </a>
+                            <div class="btn-group">
+                                <a href="{{ route('books.show', $book) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                <a href="{{ route('books.edit', $book) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <form action="{{ route('books.destroy', $book) }}" method="POST" onsubmit="return confirm('Delete this book?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
                             </div>
                         </div>
                     </div>

@@ -69,7 +69,7 @@ class ReviewController extends Controller
     public function verify(Review $review)
     {
         // Only admin can verify reviews
-        if (Auth::user()->email !== 'admin@booknook.com') {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 

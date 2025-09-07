@@ -35,10 +35,6 @@ class Report extends Model
         return $this->morphTo();
     }
 
-    public function resolvedBy()
-    {
-        return $this->belongsTo(User::class, 'resolved_by');
-    }
 
     public function scopePending($query)
     {

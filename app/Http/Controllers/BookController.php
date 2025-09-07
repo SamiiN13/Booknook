@@ -24,6 +24,11 @@ class BookController extends Controller
             $query->byGenre($request->genre);
         }
 
+        // Filter by condition
+        if ($request->filled('condition')) {
+            $query->where('condition', $request->condition);
+        }
+
         // Filter by rarity
         if ($request->filled('rarity')) {
             $query->byRarity($request->rarity);
@@ -31,7 +36,7 @@ class BookController extends Controller
 
         // Filter by trust score (only show books user can access)
         if (Auth::check()) {
-            $userTrustScore = Auth::user()->trust_score;
+            $userTrustScore = Auth::user()->trust_score ?? 0;
             $query->byTrustScore($userTrustScore);
         } else {
             // For non-authenticated users, only show common books
@@ -57,8 +62,13 @@ class BookController extends Controller
 
         $books = $query->paginate(12)->withQueryString();
 
-        // Get available genres for filter
-        $genres = Book::where('status', 'available')->distinct()->pluck('genre')->filter();
+        // Get available genres for filter (non-empty approved genres)
+        $genres = Book::where('status', 'available')
+            ->whereNotNull('genre')
+            ->where('genre', '!=', '')
+            ->distinct()
+            ->orderBy('genre')
+            ->pluck('genre');
 
         return view('books.index', compact('books', 'genres'));
     }
@@ -66,6 +76,14 @@ class BookController extends Controller
     public function create()
     {
         return view('books.create');
+    }
+
+    public function edit(Book $book)
+    {
+        if ($book->user_id !== Auth::id()) {
+            return redirect()->route('books.my-books')->with('error', 'Unauthorized.');
+        }
+        return view('books.edit', compact('book'));
     }
 
     public function store(Request $request)
@@ -120,6 +138,56 @@ class BookController extends Controller
         return redirect()->route('books.index')->with('success', 'Book added successfully! It will be reviewed by admin.');
     }
 
+    public function update(Request $request, Book $book)
+    {
+        if ($book->user_id !== Auth::id()) {
+            return redirect()->route('books.my-books')->with('error', 'Unauthorized.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:255',
+            'author' => 'required|string|max:255',
+            'isbn' => 'nullable|string|max:20',
+            'description' => 'nullable|string',
+            'genre' => 'required|string|max:100',
+            'condition' => 'required|in:new,like_new,good,fair,poor',
+            'published_year' => 'nullable|integer|min:1800|max:' . (date('Y') + 1),
+            'pages' => 'nullable|integer|min:1',
+            'language' => 'nullable|string|max:50',
+            'rarity' => 'required|in:common,uncommon,rare,very_rare',
+            'max_loan_duration' => 'required|integer|min:1|max:90',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $data = $request->except(['image']);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('books', 'public');
+            $data['image_path'] = $imagePath;
+        }
+
+        // Editing sets back to pending approval if core fields changed
+        $coreChanged = $book->title !== $data['title'] || $book->author !== $data['author'] || $book->description !== ($data['description'] ?? null) || $book->genre !== $data['genre'] || $book->rarity !== $data['rarity'];
+        if ($coreChanged) {
+            $data['status'] = 'pending_approval';
+        }
+
+        $book->update($data);
+        return redirect()->route('books.my-books')->with('success', 'Book updated successfully.');
+    }
+
+    public function destroy(Book $book)
+    {
+        if ($book->user_id !== Auth::id()) {
+            return redirect()->route('books.my-books')->with('error', 'Unauthorized.');
+        }
+        $book->delete();
+        return redirect()->route('books.my-books')->with('success', 'Book deleted successfully.');
+    }
     public function show(Book $book)
     {
         return view('books.show', compact('book'));

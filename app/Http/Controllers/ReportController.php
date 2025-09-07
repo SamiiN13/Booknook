@@ -44,11 +44,11 @@ class ReportController extends Controller
 
     public function index()
     {
-        if (Auth::user()->email !== 'admin@booknook.com') {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
             return redirect()->route('books.index');
         }
 
-        $reports = Report::with(['reporter', 'reportable', 'resolvedBy'])
+        $reports = Report::with(['reporter'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -57,17 +57,17 @@ class ReportController extends Controller
 
     public function show(Report $report)
     {
-        if (Auth::user()->email !== 'admin@booknook.com') {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
             return redirect()->route('books.index');
         }
 
-        $report->load(['reporter', 'reportable', 'resolvedBy']);
+        $report->load(['reporter']);
         return view('admin.reports.show', compact('report'));
     }
 
     public function update(Request $request, Report $report)
     {
-        if (Auth::user()->email !== 'admin@booknook.com') {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
@@ -82,12 +82,35 @@ class ReportController extends Controller
         ];
 
         if (in_array($request->status, ['resolved', 'dismissed'])) {
-            $data['resolved_by'] = Auth::id();
+            $data['resolved_by'] = Auth::guard('admin')->id();
             $data['resolved_at'] = now();
         }
 
         $report->update($data);
 
         return redirect()->back()->with('success', 'Report status updated successfully!');
+    }
+
+    public function deleteReportedItem(Report $report)
+    {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+
+        if ($report->reportable_type === Book::class) {
+            $book = Book::find($report->reportable_id);
+            if ($book) {
+                $book->delete();
+            }
+            $report->update([
+                'status' => 'resolved',
+                'admin_notes' => trim(($report->admin_notes ?? '') . "\nItem deleted by admin."),
+                'resolved_by' => Auth::guard('admin')->id(),
+                'resolved_at' => now(),
+            ]);
+            return redirect()->back()->with('success', 'Reported book deleted and report resolved.');
+        }
+
+        return redirect()->back()->with('error', 'Only reported books can be deleted via this action.');
     }
 }

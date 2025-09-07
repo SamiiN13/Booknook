@@ -11,7 +11,7 @@
                     <h4 class="mb-0"><i class="fas fa-plus me-2"></i>Share a Book</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('books.store') }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('books.store') }}" enctype="multipart/form-data" autocomplete="off">
                         @csrf
                         
                         <div class="row">
@@ -49,20 +49,14 @@
                                         <div class="mb-3">
                                             <label for="genre" class="form-label">Genre *</label>
                                             <select class="form-select @error('genre') is-invalid @enderror" 
-                                                    id="genre" name="genre" required>
+                                                    id="genre" name="genre" required autocomplete="off">
                                                 <option value="">Select Genre</option>
-                                                <option value="fiction" {{ old('genre') == 'fiction' ? 'selected' : '' }}>Fiction</option>
-                                                <option value="non-fiction" {{ old('genre') == 'non-fiction' ? 'selected' : '' }}>Non-Fiction</option>
-                                                <option value="science-fiction" {{ old('genre') == 'science-fiction' ? 'selected' : '' }}>Science Fiction</option>
-                                                <option value="mystery" {{ old('genre') == 'mystery' ? 'selected' : '' }}>Mystery</option>
-                                                <option value="romance" {{ old('genre') == 'romance' ? 'selected' : '' }}>Romance</option>
-                                                <option value="biography" {{ old('genre') == 'biography' ? 'selected' : '' }}>Biography</option>
-                                                <option value="history" {{ old('genre') == 'history' ? 'selected' : '' }}>History</option>
-                                                <option value="self-help" {{ old('genre') == 'self-help' ? 'selected' : '' }}>Self-Help</option>
-                                                <option value="business" {{ old('genre') == 'business' ? 'selected' : '' }}>Business</option>
-                                                <option value="cooking" {{ old('genre') == 'cooking' ? 'selected' : '' }}>Cooking</option>
-                                                <option value="travel" {{ old('genre') == 'travel' ? 'selected' : '' }}>Travel</option>
-                                                <option value="other" {{ old('genre') == 'other' ? 'selected' : '' }}>Other</option>
+                                                @foreach(\App\Models\Book::getAvailableGenres() as $genre)
+                                                    <option value="{{ strtolower(str_replace(' ', '-', $genre)) }}" 
+                                                            {{ old('genre') == strtolower(str_replace(' ', '-', $genre)) ? 'selected' : '' }}>
+                                                        {{ $genre }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                             @error('genre')
                                                 <div class="invalid-feedback">{{ $message }}</div>

@@ -9,6 +9,7 @@ use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 
 class AdminController extends Controller
 {
@@ -24,37 +25,16 @@ class AdminController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials)) {
-            if (Auth::user()->email === 'admin@booknook.com') {
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json([
-                        'success' => true,
-                        'user' => [
-                            'id' => Auth::id(),
-                            'name' => Auth::user()->name,
-                            'email' => Auth::user()->email
-                        ],
-                        'redirect' => '/admin/dashboard'
-                    ]);
-                }
+        if (Auth::guard('admin')->attempt($credentials)) {
+            if (Auth::guard('admin')->user()->email === 'admin@booknook.com') {
+                $request->session()->regenerate();
+                Session::put('user_type', 'admin');
+                Session::put('user_id', Auth::guard('admin')->id());
                 return redirect()->route('admin.dashboard');
             } else {
-                Auth::logout();
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Access denied. Admin only.'
-                    ], 403);
-                }
+                Auth::guard('admin')->logout();
                 return redirect()->back()->withErrors(['email' => 'Access denied. Admin only.']);
             }
-        }
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid credentials.'
-            ], 401);
         }
 
         return redirect()->back()->withErrors(['email' => 'Invalid credentials.']);
@@ -62,7 +42,7 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        if (Auth::user()->email !== 'admin@booknook.com') {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
             return redirect()->route('books.index');
         }
 
@@ -91,7 +71,7 @@ class AdminController extends Controller
 
     public function approveBook(Book $book)
     {
-        if (Auth::user()->email !== 'admin@booknook.com') {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
@@ -101,7 +81,7 @@ class AdminController extends Controller
 
     public function rejectBook(Book $book)
     {
-        if (Auth::user()->email !== 'admin@booknook.com') {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
             return redirect()->back()->with('error', 'Unauthorized action.');
         }
 
@@ -109,9 +89,37 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Book rejected and removed.');
     }
 
+    public function users()
+    {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
+            return redirect()->route('books.index');
+        }
+
+        $users = User::where('email', '!=', 'admin@booknook.com')
+            ->withCount(['books', 'reviews'])
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function allBooks()
+    {
+        if (!Auth::guard('admin')->check() || Auth::guard('admin')->user()->email !== 'admin@booknook.com') {
+            return redirect()->route('books.index');
+        }
+
+        $books = Book::with(['user', 'reviews'])
+            ->withCount('reviews')
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.books.all', compact('books'));
+    }
+
     public function logout()
     {
-        Auth::logout();
+        Auth::guard('admin')->logout();
         return redirect()->route('admin.login');
     }
 } 

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -28,41 +29,21 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
-            }
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::guard('web')->attempt($credentials)) {
             $request->session()->regenerate();
             
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'user' => [
-                        'id' => Auth::id(),
-                        'name' => Auth::user()->name,
-                        'email' => Auth::user()->email
-                    ],
-                    'redirect' => '/dashboard'
-                ]);
-            }
+            // Set user type and ID in session
+            $user = Auth::guard('web')->user();
+            $userType = $user->email === 'admin@booknook.com' ? 'admin' : 'user';
+            Session::put('user_type', $userType);
+            Session::put('user_id', $user->id);
             
             return redirect()->intended('/dashboard');
-        }
-
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'The provided credentials do not match our records.'
-            ], 401);
         }
 
         return back()->withErrors([
@@ -95,14 +76,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json(['success' => true]);
-        }
-        
         return redirect('/');
     }
 } 

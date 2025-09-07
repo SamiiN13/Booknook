@@ -32,14 +32,9 @@
                         <div class="col-md-3">
                             <select class="form-select" name="genre">
                                 <option value="">All Genres</option>
-                                <option value="fiction" {{ request('genre') == 'fiction' ? 'selected' : '' }}>Fiction</option>
-                                <option value="non-fiction" {{ request('genre') == 'non-fiction' ? 'selected' : '' }}>Non-Fiction</option>
-                                <option value="science-fiction" {{ request('genre') == 'science-fiction' ? 'selected' : '' }}>Science Fiction</option>
-                                <option value="mystery" {{ request('genre') == 'mystery' ? 'selected' : '' }}>Mystery</option>
-                                <option value="romance" {{ request('genre') == 'romance' ? 'selected' : '' }}>Romance</option>
-                                <option value="biography" {{ request('genre') == 'biography' ? 'selected' : '' }}>Biography</option>
-                                <option value="history" {{ request('genre') == 'history' ? 'selected' : '' }}>History</option>
-                                <option value="self-help" {{ request('genre') == 'self-help' ? 'selected' : '' }}>Self-Help</option>
+                                @foreach(($genres ?? []) as $genre)
+                                    <option value="{{ $genre }}" {{ request('genre') == $genre ? 'selected' : '' }}>{{ $genre }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-3">

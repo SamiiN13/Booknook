@@ -33,15 +33,22 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                @if($report->reportable_type === 'App\Models\Book')
-                                                    <div>
-                                                        <strong>{{ $report->reportable->title }}</strong><br>
-                                                        <small class="text-muted">by {{ $report->reportable->author }}</small>
-                                                    </div>
+                                                @if($report->reportable)
+                                                    @if($report->reportable_type === 'App\Models\Book')
+                                                        <div>
+                                                            <strong>{{ $report->reportable->title }}</strong><br>
+                                                            <small class="text-muted">by {{ $report->reportable->author }}</small>
+                                                        </div>
+                                                    @else
+                                                        <div>
+                                                            <strong>{{ $report->reportable->name }}</strong><br>
+                                                            <small class="text-muted">User</small>
+                                                        </div>
+                                                    @endif
                                                 @else
                                                     <div>
-                                                        <strong>{{ $report->reportable->name }}</strong><br>
-                                                        <small class="text-muted">User</small>
+                                                        <strong>Item Deleted</strong><br>
+                                                        <small class="text-muted">The reported item no longer exists</small>
                                                     </div>
                                                 @endif
                                             </td>
@@ -82,6 +89,15 @@
                                                             <input type="hidden" name="status" value="investigating">
                                                             <button type="submit" class="btn btn-sm btn-outline-info">
                                                                 <i class="fas fa-search"></i> Investigate
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                    @if($report->reportable && $report->reportable_type === 'App\Models\Book')
+                                                        <form action="{{ route('admin.reports.delete-item', $report) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete the reported book? This cannot be undone.')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                <i class="fas fa-trash"></i> Delete Book
                                                             </button>
                                                         </form>
                                                     @endif

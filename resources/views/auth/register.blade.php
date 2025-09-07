@@ -11,7 +11,7 @@
                     <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Join Booknook</h4>
                 </div>
                 <div class="card-body p-4">
-                    <form method="POST" action="{{ route('register') }}">
+                    <form method="POST" action="{{ route('register') }}" autocomplete="off">
                         @csrf
                         
                         <div class="mb-3">
@@ -35,7 +35,7 @@
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                                   id="password" name="password" required>
+                                   id="password" name="password" required autocomplete="new-password">
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -44,7 +44,7 @@
                         <div class="mb-3">
                             <label for="password_confirmation" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" 
-                                   id="password_confirmation" name="password_confirmation" required>
+                                   id="password_confirmation" name="password_confirmation" required autocomplete="new-password">
                         </div>
 
                         <div class="d-grid">

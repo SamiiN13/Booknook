@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookRequestController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -36,7 +37,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Book management
     Route::get('/books/create', [BookController::class, 'create'])->name('books.create');
+    Route::get('/books/{book}/edit', [BookController::class, 'edit'])->name('books.edit');
     Route::post('/books', [BookController::class, 'store'])->name('books.store');
+    Route::put('/books/{book}', [BookController::class, 'update'])->name('books.update');
+    Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
     Route::get('/my-books', [BookController::class, 'myBooks'])->name('books.my-books');
     
     // Book requests
@@ -55,6 +59,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Reports
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 // Admin routes
@@ -62,7 +70,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/login', [AdminController::class, 'showLogin'])->name('admin.login');
     Route::post('/login', [AdminController::class, 'login']);
     
-    Route::middleware(['auth'])->group(function () {
+    Route::middleware(['auth:admin'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         
         // Book management
@@ -74,9 +82,14 @@ Route::prefix('admin')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
         Route::get('/reports/{report}', [ReportController::class, 'show'])->name('admin.reports.show');
         Route::patch('/reports/{report}', [ReportController::class, 'update'])->name('admin.reports.update');
+        Route::delete('/reports/{report}/item', [ReportController::class, 'deleteReportedItem'])->name('admin.reports.delete-item');
         
         // Review verification
         Route::patch('/reviews/{review}/verify', [ReviewController::class, 'verify'])->name('admin.reviews.verify');
+        
+        // User management
+        Route::get('/users', [AdminController::class, 'users'])->name('admin.users.index');
+        Route::get('/books/all', [AdminController::class, 'allBooks'])->name('admin.books.all');
         
         Route::post('/logout', [AdminController::class, 'logout'])->name('admin.logout');
     });
